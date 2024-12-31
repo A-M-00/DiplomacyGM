@@ -8,7 +8,9 @@ import shapely
 from lxml import etree
 from shapely.geometry import Point, Polygon
 
-from diplomacy.map_parser.vector import cheat_parsing
+import config
+
+from diplomacy.map_parser.vector import cheat_parsing, cheat_parsing_helladip
 from diplomacy.map_parser.vector.config_player import player_data, NEUTRAL, BLANK_CENTER
 from diplomacy.map_parser.vector.config_svg import *
 from diplomacy.map_parser.vector.transform import get_transform
@@ -59,6 +61,7 @@ class Parser:
 
     def parse(self) -> Board:
         players = set()
+        print (player_data)
         for name, (color, vscc, iscc) in player_data.items():
             player = Player(name, color, vscc, iscc, set(), set())
             players.add(player)
@@ -103,11 +106,20 @@ class Parser:
             province1.adjacent.add(province2)
             province2.adjacent.add(province1)
 
-        cheat_parsing.set_coasts(self.name_to_province)
-        cheat_parsing.set_canals(self.name_to_province)
+        if (config.VARIANT_NAME == "imperial_diplomacy"):
+            cheat_parsing.set_coasts(self.name_to_province)
+            cheat_parsing.set_canals(self.name_to_province)
 
-        provinces = cheat_parsing.create_high_seas_and_sands(provinces, self.name_to_province)
-        cheat_parsing.set_secondary_locs(self.name_to_province)
+            provinces = cheat_parsing.create_high_seas_and_sands(provinces, self.name_to_province)
+            cheat_parsing.set_secondary_locs(self.name_to_province)
+        elif (config.VARIANT_NAME == "HellaDip"):
+            cheat_parsing_helladip.set_coasts(self.name_to_province)
+        else:
+            cheat_parsing.set_coasts(self.name_to_province)
+            cheat_parsing.set_canals(self.name_to_province)
+
+            provinces = cheat_parsing.create_high_seas_and_sands(provinces, self.name_to_province)
+            cheat_parsing.set_secondary_locs(self.name_to_province)
 
         # set coasts
         for province in provinces:
